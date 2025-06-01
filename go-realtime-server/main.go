@@ -16,7 +16,7 @@ func main() {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
-
+	utils.InitRedis()
 	// 2. Redis 구독 시작
 	fmt.Println("🟢 Redis 구독 시작됨 (chat_channel)")
 	go utils.SubscribeAndBroadcast(rdb) // ✅ 함수 이름 대문자 시작 확인

@@ -18,6 +18,7 @@ var Clients = make(map[string]*websocket.Conn)
 var Ctx = context.Background()
 
 type Message struct {
+	Type               string `json:"type"`
 	Room               string `json:"room"`
 	Content            string `json:"content"`
 	SenderID           int    `json:"sender_id"`
@@ -46,6 +47,10 @@ func Subscribe(channel string, handler func(string)) {
 
 // Publish: 메시지를 해당 채널에 전송
 func Publish(channel string, msg string) {
+	if RedisClient == nil {
+		log.Println("❌ [Publish] RedisClient가 초기화되지 않았습니다!")
+		return
+	}
 	RedisClient.Publish(Ctx, channel, msg)
 }
 func SubscribeAndBroadcast(rdb *redis.Client) {
@@ -60,7 +65,7 @@ func SubscribeAndBroadcast(rdb *redis.Client) {
 			continue
 		}
 
-		fmt.Printf("📨 메시지 수신 (room: %s): %s\n", message.Room, message.Content)
+		//fmt.Printf("📨 메시지 수신 (room: %s): %s\n", message.Room, message.Content)
 
 		conn, ok := Clients[message.Room]
 		if ok {
@@ -73,5 +78,6 @@ func SubscribeAndBroadcast(rdb *redis.Client) {
 		} else {
 			fmt.Printf("⚠️ 해당 room(%s) 연결 없음\n", message.Room)
 		}
+
 	}
 }

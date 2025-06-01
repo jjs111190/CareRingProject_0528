@@ -8,14 +8,15 @@ import {
   Image,
   Dimensions,
   Animated,
-  Pressable
+  Pressable,
+  RefreshControl,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import NoDataImage from '../../assets/empty-chat.png'; // 적절한 경로의 이미지 사용
-
+import NoDataImage from '../../assets/empty-chat.png';
+import LinearGradient from 'react-native-linear-gradient';
 const { width: windowWidth } = Dimensions.get('window');
 const TABS = ['All Chats', 'Groups', 'Contacts'];
 
@@ -63,6 +64,7 @@ const TabScreen = ({ menus, contents }) => {
 
 const ChatScreen = () => {
   const [users, setUsers] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   const fetchMessageUsers = useCallback(async () => {
@@ -71,7 +73,25 @@ const ChatScreen = () => {
       if (!token) return;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const res = await axios.get('https://mycarering.loca.lt/messages/users', config);
-      setUsers(res.data);
+
+      const usersWithImages = await Promise.all(
+        res.data.map(async (user) => {
+          try {
+            const basicInfo = await axios.get(`https://mycarering.loca.lt/basic-info/${user.user_id}`, config);
+            return {
+              ...user,
+              profile_image: basicInfo.data.image_url || null,
+            };
+          } catch (err) {
+            return {
+              ...user,
+              profile_image: null,
+            };
+          }
+        })
+      );
+
+      setUsers(usersWithImages);
     } catch (e) {
       console.error('🔴 API 호출 실패:', e.response?.data || e.message);
     }
@@ -85,6 +105,12 @@ const ChatScreen = () => {
     const interval = setInterval(fetchMessageUsers, 5000);
     return () => clearInterval(interval);
   }, [fetchMessageUsers]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchMessageUsers();
+    setRefreshing(false);
+  };
 
   const handleDeleteChat = async (userId) => {
     try {
@@ -102,7 +128,6 @@ const ChatScreen = () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) return;
-      // 백엔드에 맞는 읽음 처리 API 경로로 수정 필요
       await axios.post(
         `https://mycarering.loca.lt/messages/${userId}/read`,
         {},
@@ -136,7 +161,13 @@ const ChatScreen = () => {
       <EmptyPlaceholder message="There are no users in the conversation." />
     </View>
   ) : (
-    <ScrollView style={{ marginTop: 10 }}>
+    <ScrollView
+      style={{ marginTop: 10 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      showsVerticalScrollIndicator={false} // ✅ 스크롤바 숨김
+    >
       {users.map((user, idx) => (
         <Swipeable
           key={idx}
@@ -154,6 +185,12 @@ const ChatScreen = () => {
             }}
           >
             <View style={{ position: 'relative' }}>
+                <LinearGradient
+    colors={['#7F7FD5', '#86A8E7', '#91EAE4']}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.gradientRing}
+  >
               <Image
                 source={
                   user.profile_image
@@ -162,6 +199,7 @@ const ChatScreen = () => {
                 }
                 style={styles.profileImage}
               />
+              </LinearGradient>
               {user.unread_count > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{user.unread_count}</Text>
@@ -200,7 +238,7 @@ const ChatScreen = () => {
         contents={[
           ChatContent,
           <EmptyPlaceholder message="There are no groups yet." />,
-          <EmptyPlaceholder message="There are no contacts yet." />
+          <EmptyPlaceholder message="There are no contacts yet." />,
         ]}
       />
       <TouchableOpacity
@@ -274,12 +312,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     alignItems: 'center',
   },
-  profileImage: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    marginRight: 12,
-  },
+  gradientRing: {
+  width: 54,
+  height: 54,
+  borderRadius: 27,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 12,
+},
+profileImage: {
+  width: 46,
+  height: 46,
+  borderRadius: 23,
+  backgroundColor: '#fff', // 배경이 비었을 때 깔끔하게 보이도록
+},
   messageInfo: {
     flex: 1,
   },

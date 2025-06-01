@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import MessageDetail from '../screens/MessageDetail';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface PostCardProps {
   id: number;
@@ -66,8 +67,26 @@ const PostCard: React.FC<PostCardProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentLikes, setCommentLikes] = useState<Record<number, { count: number; liked: boolean }>>({});
   const [showCommentsModal, setShowCommentsModal] = useState(false);
-
+  const [receiver, setReceiver] = useState<{ id: number; nickname: string; image_url?: string } | null>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+  const fetchReceiverInfo = async () => {
+    try {
+      const res = await axios.get(`https://mycarering.loca.lt/users/${user_id}`);
+      const basicInfoRes = await axios.get(`https://mycarering.loca.lt/basic-info/${user_id}`);
+
+      setReceiver({
+        id: res.data.id,
+        nickname: res.data.nickname,
+        image_url: basicInfoRes.data.image_url,
+      });
+    } catch (e) {
+      console.error('❌ 수신자 정보 로딩 실패:', e);
+    }
+  };
+
+  fetchReceiverInfo(); // ✅ 호출은 일반 함수처럼
+}, [user_id]);
 
   const handleCommentPressIn = () => {
     Animated.spring(scaleAnim, {
@@ -302,14 +321,21 @@ const PostCard: React.FC<PostCardProps> = ({
         {/* User Info Section */}
         <View style={styles.userInfo}>
           <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: user_id })}>
+              <LinearGradient
+              colors={['#7F7FD5', '#86A8E7', '#91EAE4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.userGradientRing}
+            >
             <Image
-              source={
-                user_profile_image
-                  ? { uri: `https://mycarering.loca.lt${user_profile_image}` }
-                  : require('../../assets/user-icon.png')
-              }
-              style={styles.userIcon}
-            />
+  source={
+    receiver?.image_url
+      ? { uri: `https://mycarering.loca.lt${receiver.image_url}` }
+      : require('../../assets/user-icon.png')
+  }
+  style={styles.userIcon}
+/>
+</LinearGradient>
           </TouchableOpacity>
           <View style={styles.userDetails}>
             <Text style={styles.userName}>{user || 'Unknown'}</Text>
@@ -494,13 +520,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, // Apply horizontal padding here
     paddingBottom: 12,
   },
+    userGradientRing: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   userIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    marginRight: 12,
-    borderWidth: StyleSheet.hairlineWidth, // Even thinner border
-    borderColor: '#E0E0E0',
+    backgroundColor: '#fff',
   },
   userDetails: {
     flex: 1,

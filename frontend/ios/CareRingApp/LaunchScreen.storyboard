@@ -17,30 +17,36 @@
                         <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="i9x-Oo-v8F">
-                                <rect key="frame" x="125" y="376" width="180" height="180"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="fOt-ZL-kNA">
+                                <rect key="frame" x="165" y="416" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="splah_logo" translatesAutoresizingMaskIntoConstraints="NO" id="FMQ-vt-lK9">
-                                        <rect key="frame" x="0.0" y="0.0" width="180" height="180"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="5Yx-ld-oMD"/>
-                                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="100" id="6EL-JQ-LIS"/>
-                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="100" id="WPT-MK-G21"/>
-                                            <constraint firstAttribute="height" constant="180" id="nXT-0T-bOG"/>
-                                            <constraint firstAttribute="width" constant="180" id="vSN-dh-Eog"/>
-                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="120" id="z6H-1y-xcJ"/>
-                                        </constraints>
+                                        <rect key="frame" x="20" y="0.0" width="60" height="100"/>
                                     </imageView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerY" secondItem="fOt-ZL-kNA" secondAttribute="centerY" id="0bf-JQ-kJC"/>
+                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerX" secondItem="fOt-ZL-kNA" secondAttribute="centerX" id="57n-8f-G3f"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="D6l-UQ-MyI"/>
+                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerY" secondItem="fOt-ZL-kNA" secondAttribute="centerY" id="Oy8-Ws-gCz"/>
+                                    <constraint firstAttribute="width" constant="100" id="V0g-td-UrB"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="200" id="fda-nC-uB8"/>
+                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerX" secondItem="fOt-ZL-kNA" secondAttribute="centerX" id="l1b-zY-auY"/>
+                                    <constraint firstAttribute="height" constant="100" id="m3b-0l-1cA"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="fOt-ZL-kNA" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="658-Cm-t0C"/>
+                            <constraint firstItem="fOt-ZL-kNA" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="eig-P7-WJU"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="51.627906976744185" y="374.03433476394855"/>
+            <point key="canvasLocation" x="52" y="374.66266866566718"/>
         </scene>
     </scenes>
     <resources>

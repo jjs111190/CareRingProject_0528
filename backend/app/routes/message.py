@@ -254,3 +254,22 @@ def mark_single_message_as_read(
     message.is_read = True
     db.commit()
     return {"status": "success", "message_id": message_id}
+
+# 메시지 삭제 API 라우트
+@router.delete("/messages/{message_id}")
+async def delete_message(message_id: int, current_user: User = Depends(get_current_user)):
+    message = db.query(Message).filter(Message.id == message_id).first()
+    if not message or message.sender_id != current_user.id:
+        raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
+
+    db.delete(message)
+    db.commit()
+
+    # 삭제 이벤트 WebSocket으로 브로드캐스트
+    delete_payload = {
+        "type": "delete",
+        "message_id": message_id,
+    }
+    await broadcast_to_users(json.dumps(delete_payload))  # 사용자에게 브로드캐스트 함수 호출
+
+    return {"detail": "삭제 완료"}

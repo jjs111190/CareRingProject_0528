@@ -12,7 +12,7 @@ import { Animated } from 'react-native';
 import FloatingButton from './FloatingButton';
 import { io, Socket } from 'socket.io-client';
 import Sound from 'react-native-sound';
-
+import LinearGradient from 'react-native-linear-gradient';
 let typingTimeout: NodeJS.Timeout;
 Sound.setCategory('Playback');
 
@@ -24,36 +24,124 @@ const MessageScreen: React.FC = () => {
   const sendButtonAnim = useRef(new Animated.Value(0)).current;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<MessageType[]>([]);
-  const [receiver, setReceiver] = useState<{ id: number; nickname: string } | null>(null);
+  const [receiver, setReceiver] = useState<{ id: number; nickname: string; image_url?: string } | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const socketRef = useRef<Socket | null>(null);
-
+  const wsRef = useRef<WebSocket | null>(null); 
   const socketInitialized = useRef(false);
+  const reconnectInterval = 3000; // 재연결 딜레이 (ms)
+  const maxReconnectAttempts = 10;
+  let reconnectAttempts = 0;
 
 
+const handleLongPressMessage = (msg: MessageType) => {
+  console.log('[🧪 DEBUG] 롱프레스 발생:', msg);
+  const deleteId = msg.message_id ?? msg.id;
 
+  if (msg.sender_id !== currentUserId) {
+    console.log('[⚠️] 삭제 권한 없음 - 본인 메시지가 아님');
+    return;
+  }
+  wsRef.current?.send(JSON.stringify({
+  type: 'delete_message',
+  message_id: msg.message_id,
+  receiverId: receiver?.id, // 수신자 ID
+}));
+  Alert.alert('메시지 삭제', '정말로 삭제하시겠습니까?', [
+    { text: '취소', style: 'cancel' },
+    {
+      text: '삭제', style: 'destructive', onPress: async () => {
+        try {
+          const token = await AsyncStorage.getItem('token');
+          if (!token) {
+            console.log('[❌] 토큰 없음 - 삭제 불가');
+            return;
+          }
+
+          console.log('[📡] DELETE 요청 보냄:', deleteId);
+
+          await axios.delete(`https://mycarering.loca.lt/messages/${deleteId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          console.log('[✅] 메시지 삭제 완료:', deleteId);
+
+          // 🔥 삭제된 메시지만 제거
+          setMessages(prev => prev.filter(m => m.message_id !== deleteId));
+        } catch (e) {
+          console.error('[❌] 메시지 삭제 실패:', e);
+        }
+      },
+    },
+  ]);
+};
 
 useEffect(() => {
   const connectWebSocket = async () => {
-    const token = await AsyncStorage.getItem('token');
-    if (!token) return;
+  const token = await AsyncStorage.getItem('token');
+  if (!token) return;
 
-    const decoded: any = jwtDecode(token);
-    const myId = decoded.user_id;
+  const decoded: any = jwtDecode(token);
+  const myId = decoded.user_id;
 
-    const ws = new WebSocket('wss://carering.loca.lt/ws'); // Android 에뮬레이터 기준
+  const ws = new WebSocket('wss://carering.loca.lt/ws');
 
-    ws.onopen = () => {
-      console.log('🟢 WebSocket 연결 성공');
-      ws.send(JSON.stringify({ room: `user_${myId}` })); // ✅ 반드시 room 정보 전송!
-    };
+  ws.onopen = () => {
+    console.log('🟢 WebSocket 연결 성공');
+    reconnectAttempts = 0; // 성공 시 초기화
+    ws.send(JSON.stringify({ room: `user_${myId}` }));
+    ws.send(JSON.stringify({ type: 'join', userId: myId }));
+  };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('📩 WebSocket 수신 메시지:', data);
-      setMessages(prev => [...prev, data]);
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('📩 WebSocket 수신 메시지:', data);
+    if (data.type === 'delete_message') {
+      console.log('🧽 메시지 삭제 반영:', data.message_id);
+      setMessages(prev => prev.filter(m => m.message_id !== data.message_id));
+      return;
+    }
+  
+
+
+     ws.onerror = (e) => {
+    console.error('❌ WebSocket 오류:', e.message);
+  };
+
+  ws.onclose = () => {
+  console.log('🔌 WebSocket 연결 종료');
+  if (reconnectAttempts < maxReconnectAttempts) {
+    reconnectAttempts++;
+    console.log(`🔁 재연결 시도 (${reconnectAttempts}/${maxReconnectAttempts})...`);
+    setTimeout(connectWebSocket, reconnectInterval);
+  } else {
+    console.warn('⛔️ WebSocket 재연결 최대 시도 횟수 초과');
+  }
+};
+
+ // WebSocket 메시지 수신 핸들러 (예: ws.onmessage)
+if (data.type === 'typing') {
+  if (
+    data.sender_id !== currentUserId && // ✅ 자기 자신은 제외
+    data.sender_id === receiver?.id
+  ) {
+    setIsTyping(true);
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => setIsTyping(false), 3000);
+  }
+  return;
+}
+  if (data.type === 'delete') {
+    console.log('[🧹] 삭제 메시지 수신:', data.message_id);
+    setMessages((prev) => prev.filter((msg) => msg.message_id !== data.message_id));
+    return;
+  }
+  setMessages(prev => [...prev, data]);
+    return;
+  
+      
     };
 
     ws.onerror = (e) => {
@@ -63,6 +151,7 @@ useEffect(() => {
     ws.onclose = () => {
       console.log('🔌 WebSocket 연결 종료');
     };
+    wsRef.current = ws;
   };
 
   connectWebSocket();
@@ -99,20 +188,30 @@ useEffect(() => {
       }
     };
   }, [currentUserId]);
-  
+  let lastTypingTime = 0;
   const handleTyping = async (text: string) => {
-    setMessage(text);
-    const token = await AsyncStorage.getItem('token');
-    if (!token || !receiver || !socketRef.current) return;
-    console.log("🔼 typing emit 전송:", {
-  receiverId: receiver.id,
-  senderId: currentUserId,
-});
-    socketRef.current?.emit("typing", {
-  receiverId: receiver.id,
-  senderId: currentUserId, // 서버에서 sender도 필요함
-});
-  };
+  setMessage(text);
+
+  const now = Date.now();
+  if (now - lastTypingTime < 1000) return; // 1초 안에 중복 전송 방지
+  lastTypingTime = now;
+
+  const token = await AsyncStorage.getItem('token');
+  if (!token || !receiver || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    console.log('❌ WebSocket not ready or missing data');
+    return;
+  }
+
+  const decoded: any = jwtDecode(token);
+const typingPayload = {
+  type: 'typing',
+  senderId: decoded.user_id,     // ✅ camelCase
+  receiverId: receiver.id,       // ✅ camelCase
+};
+
+  wsRef.current.send(JSON.stringify(typingPayload));
+  console.log('📝 타이핑 전송:', typingPayload);
+};
   // 🔗 WebSocket 연결 (Go 서버용)
 
  useEffect(() => {
@@ -128,27 +227,36 @@ useEffect(() => {
     setCurrentUserId(myId);
 
     const socketInstance = io('https://mycarering.loca.lt', {
-      transports: ['websocket'],
-      auth: { token },
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
+  transports: ['websocket'],
+  auth: { token },
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+});
+
+
+socketInstance.on('connect_error', (err) => {
+  console.log('❌ Socket Connect Error:', err.message);
+});
 
     socketRef.current = socketInstance;
 
     socketInstance.on('connect', () => {
       console.log('✅ Socket Connected');
+    console.log('📦 socketRef.current 상태:', socketRef.current);
       socketInstance.emit('join', { room: `user_${myId}` });
     });
 
     socketInstance.on('typing', (senderId: number) => {
-      if (senderId === receiver?.id) {
-        setIsTyping(true);
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => setIsTyping(false), 3000);
-      }
-    });
+  if (
+    senderId !== currentUserId && // ✅ 자기 자신 제외
+    senderId === receiver?.id
+  ) {
+    setIsTyping(true);
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => setIsTyping(false), 3000);
+  }
+});
 
     socketInstance.on('message', (msg: MessageResponse) => {
       if (
@@ -179,7 +287,7 @@ useEffect(() => {
     clearTimeout(typingTimeout);
     socketInitialized.current = false;
   };
-}, [receiver]);
+}, []);
 useEffect(() => {
   if (receiver && currentUserId !== null) {
     fetchMessages(); // ✅ 재진입 시 자동 메시지 불러오기
@@ -204,6 +312,14 @@ useEffect(() => {
     } catch (e) {
       console.error('❌ 수신자 정보 실패:', e);
     }
+    const res = await axios.get(`https://mycarering.loca.lt/users/${userId}`);
+const basicInfoRes = await axios.get(`https://mycarering.loca.lt/basic-info/${userId}`);
+
+setReceiver({
+  id: res.data.id,
+  nickname: res.data.nickname,
+  image_url: basicInfoRes.data.image_url,
+});
   }, [userId]);
 
   useEffect(() => {
@@ -287,7 +403,15 @@ useEffect(() => {
             <Image source={require('../../assets/back.png')} style={styles.icon} />
           </TouchableOpacity>
           <View style={styles.userInfo}>
-            <Image source={require('../../assets/user-icon.png')} style={styles.avatar} />
+            
+           <Image
+  source={
+    receiver?.image_url
+      ? { uri: `https://mycarering.loca.lt${receiver.image_url}` }
+      : require('../../assets/user-icon.png')
+  }
+  style={styles.avatar}
+/>
             <Text style={styles.username}>{receiver ? receiver.nickname : '...'}</Text>
           </View>
           <Image source={require('../../assets/settings.png')} style={styles.icon} />
@@ -311,59 +435,45 @@ useEffect(() => {
     index === 0 || messages[index - 1].sender_id !== msg.sender_id;
 
   return (
-    <View key={msg.id || index}style={{ marginBottom: isSameSenderAsNext ? 2 : 8 }}>
-      <View
-        style={[
-          styles.bubbleContainer,
-          isSentByCurrentUser ? styles.sentContainer : styles.receivedContainer,
-        ]}
+    <TouchableOpacity
+  key={msg.id || index}
+  onLongPress={() => handleLongPressMessage(msg)}
+  delayLongPress={500}
+  activeOpacity={0.8}
+  style={{ marginBottom: isSameSenderAsNext ? 2 : 8 }}
+>
+  {/* 기존 메시지 렌더링 */}
+  <View
+    style={[styles.bubbleContainer,
+      isSentByCurrentUser ? styles.sentContainer : styles.receivedContainer]}
+  >
+    {!isSentByCurrentUser && isFirstInGroup && <View style={styles.leftTail} />}
+    <View style={[styles.bubble,
+      isSentByCurrentUser ? styles.sentBubble : styles.receivedBubble]}
+    >
+      <Text style={[styles.bubbleText,
+        isSentByCurrentUser ? styles.sentText : styles.receivedText]}
       >
-        {/* ⬅️ 왼쪽 꼬리 - 그룹의 첫 메시지일 때만 표시 */}
-        {!isSentByCurrentUser && isFirstInGroup && (
-          <View style={styles.leftTail} />
-        )}
-
-        {/* 💬 말풍선 */}
-        <View
-          style={[
-            styles.bubble,
-            isSentByCurrentUser ? styles.sentBubble : styles.receivedBubble,
-          ]}
-        >
-          <Text
-            style={[
-              styles.bubbleText,
-              isSentByCurrentUser ? styles.sentText : styles.receivedText,
-            ]}
-          >
-            {msg.content}
-          </Text>
-        </View>
-
-        {/* ➡️ 오른쪽 꼬리 - 그룹의 첫 메시지일 때만 표시 */}
-        {isSentByCurrentUser && isFirstInGroup && (
-          <View style={styles.rightTail} />
-        )}
-      </View>
-
-      {/* 🕒 그룹 마지막 메시지에만 시간 표시 */}
-      {!isSameSenderAsNext && (
-        <Text
-          style={[
-            styles.time,
-            isSentByCurrentUser ? styles.timeRight : styles.timeLeft,
-          ]}
-        >
-          {formatTime(msg.timestamp)}
-        </Text>
-      )}
+        {msg.content}
+      </Text>
     </View>
+    {isSentByCurrentUser && isFirstInGroup && <View style={styles.rightTail} />}
+  </View>
+  {!isSameSenderAsNext && (
+    <Text style={[styles.time,
+      isSentByCurrentUser ? styles.timeRight : styles.timeLeft]}
+    >
+      {formatTime(msg.timestamp)}
+    </Text>
+  )}
+</TouchableOpacity>
   );
 })}
 
           {isTyping && (
             <View style={styles.typingIndicator}>
-              <Text style={styles.typingText}>{receiver?.nickname} is typing...</Text>
+              <Text style={styles.typingText}>{receiver?.nickname} 
+              is typing...</Text>
             </View>
           )}
         </ScrollView>
@@ -374,12 +484,16 @@ useEffect(() => {
           </View>
             <FloatingButton />
           <TextInput
-            style={styles.textInput}
-            value={message}
-            onChangeText={handleTyping}
-            placeholder="Write a message..."
-            placeholderTextColor="#999"
-          />
+  style={styles.textInput}
+  value={message}
+  onChangeText={(text) => {
+    console.log('입력됨:', text); // ✅ 여기에 로그가 찍히는지 확인
+    handleTyping(text);           // ✅ 기존 로직 호출
+  }}
+  placeholder="Write a message..."
+  placeholderTextColor="#999"
+/>
+          
           <Animated.View
   style={{
     opacity: sendButtonAnim,

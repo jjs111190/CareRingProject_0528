@@ -14,6 +14,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
 
 const UserProfileScreen: React.FC = () => {
   const route = useRoute();
@@ -98,10 +99,17 @@ const UserProfileScreen: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.profileCard}>
+                    <LinearGradient
+  colors={['#7F7FD5', '#86A8E7', '#91EAE4']}
+       start={{ x: 0.25, y: 0 }}
+         end={{ x: 0.75, y: 1 }}
+         style={styles.gradientRing}
+    >
             <Image
               source={basicInfo?.image_url ? { uri: `https://mycarering.loca.lt${basicInfo.image_url}` } : require('../../assets/user-icon.png')}
               style={styles.profileImage}
             />
+            </LinearGradient>
             <Text style={styles.userName}>{user.nickname}</Text>
             <Text style={styles.joinDate}>Joined {new Date(user.created_at).toLocaleDateString()}</Text>
             <View style={styles.followRow}>
@@ -175,7 +183,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  profileImage: { width: 100, height: 100, borderRadius: 50, marginBottom: 12 },
+  profileImage: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  backgroundColor: '#eee',
+},
   userName: { fontSize: 22, fontWeight: '700', color: '#1F2937' },
   joinDate: { fontSize: 14, color: '#6B7280', marginTop: 4 },
   followRow: { flexDirection: 'row', gap: 20, marginTop: 8 },
@@ -206,6 +219,15 @@ const styles = StyleSheet.create({
   infoValue: { fontSize: 15, color: '#111827' },
   postsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   postImage: { width: '30%', aspectRatio: 1, borderRadius: 12, backgroundColor: '#E5E7EB' },
+  gradientRing: {
+  width: 108,
+  height: 108,
+  borderRadius: 54,
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 3,
+  backgroundColor: '#fff', // 내부 여백 대비용
+},
 });
 
 export default UserProfileScreen;

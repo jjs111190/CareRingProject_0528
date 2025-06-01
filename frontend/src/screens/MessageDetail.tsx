@@ -12,6 +12,7 @@ import { RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // Import KeyboardAwareScrollView
 import { KeyboardAvoidingView } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 interface CommentType {
   
   id: number;
@@ -45,13 +46,32 @@ const MessageDetail: React.FC<MessageDetailProps> = ({ postId, showCommentsOnly 
   const [commentLikesState, setCommentLikesState] = useState<Record<number, { count: number; liked: boolean }>>({});
   const [sortMode, setSortMode] = useState<'popular' | 'latest'>('popular');
   const [keyboardHeight, setKeyboardHeight] = useState(0); // Still useful for Toast position
-
+  const [receiver, setReceiver] = useState<{ id: number; nickname: string; image_url?: string } | null>(null);
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchComments();
     setRefreshing(false);
   };
+const [commentProfiles, setCommentProfiles] = useState<Record<number, string | undefined>>({});
 
+useEffect(() => {
+  const fetchAllCommentProfiles = async () => {
+    const newProfiles: Record<number, string | undefined> = {};
+    await Promise.all(
+      comments.map(async (comment) => {
+        try {
+          const res = await axios.get(`https://mycarering.loca.lt/basic-info/${comment.user_id}`);
+          newProfiles[comment.user_id] = res.data.image_url;
+        } catch {
+          newProfiles[comment.user_id] = undefined;
+        }
+      })
+    );
+    setCommentProfiles(newProfiles);
+  };
+
+  if (comments.length > 0) fetchAllCommentProfiles();
+}, [comments]);
   const showErrorToast = (message: string) => {
     Toast.show({
       type: 'error',
@@ -445,14 +465,22 @@ const MessageDetail: React.FC<MessageDetailProps> = ({ postId, showCommentsOnly 
                   }
                 }}
               >
-                <Image
-                  source={
-                    comment.user_profile_image
-                      ? { uri: `https://mycarering.loca.lt${comment.user_profile_image}` }
-                      : require('../../assets/user-icon.png')
-                  }
-                  style={styles.commentUserIcon}
-                />
+                {/* 댓글 이미지 렌더링 */}
+<LinearGradient
+  colors={['#7F7FD5', '#86A8E7', '#91EAE4']}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.gradientRing}
+>
+  <Image
+    source={
+      commentProfiles[comment.user_id]
+        ? { uri: `https://mycarering.loca.lt${commentProfiles[comment.user_id]}` }
+        : require('../../assets/user-icon.png')
+    }
+    style={styles.commentUserIcon}
+  />
+</LinearGradient>
               </TouchableOpacity>
 
               <View style={styles.commentContentWrapper}>
@@ -632,13 +660,22 @@ const styles = StyleSheet.create({
     // shadowRadius: 1,
     // elevation: 2,
   },
-  commentUserIcon: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    marginRight: 10,
-    marginTop: 5,
-  },
+gradientRing: {
+  width: 42, // 아이콘보다 조금 크게
+  height: 42,
+  borderRadius: 21,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 10,
+  marginTop: 5,
+},
+
+commentUserIcon: {
+  width: 35,
+  height: 35,
+  borderRadius: 17.5,
+  backgroundColor: '#fff', // 내부 배경 흰색 처리
+},
   commentContentWrapper: {
     flex: 1,
     flexDirection: 'row',
@@ -733,6 +770,7 @@ const styles = StyleSheet.create({
     height: 22,
     tintColor: '#fff',
   },
+  
 });
 
 export default MessageDetail;

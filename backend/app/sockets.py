@@ -62,17 +62,13 @@ async def handle_join(sid, data):
         await sio.enter_room(sid, room)
         print(f"✅ User with sid {sid} joined room: {room}")
 
-@sio.on("typing")
-async def handle_typing(sid, data):
-    print("📥 [typing] 수신 데이터:", data)
-    receiver_id = data.get("receiverId")
-    sender_id = data.get("senderId")
-    if receiver_id and sender_id:
-        room = f"user_{receiver_id}"
-        await sio.emit("typing", sender_id, room=room, skip_sid=sid)
 
-        # Redis 발행
-        broadcast_to_go(user=str(sender_id), message="typing...")
+@sio.event
+async def typing(sid, data):
+    receiver_id = data.get('receiver_Id')
+    sender_id = data.get('sender_Id')
+    room = f"user_{receiver_id}"
+    await sio.emit("typing", sender_id, room=room)
 
 @sio.on("send_message")
 async def handle_send_message(sid, data):

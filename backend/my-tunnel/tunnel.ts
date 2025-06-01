@@ -5,17 +5,16 @@ const dotenv = require('dotenv');
 const localtunnel = require('localtunnel');
 const { execSync, spawn } = require('child_process');
 
-// 나머지 코드 ↓ 여기에 계속 작성
+// ✅ 환경 변수 로드
 dotenv.config();
 
-// 예: 환경변수 로드
+// ✅ 기본 설정값
 const MYSQL_PASSWORD = process.env.MYSQL_ROOT_PASSWORD || 'root';
 const TUNNEL_PORT = Number(process.env.TUNNEL_PORT) || 8000;
 const SUBDOMAIN = process.env.TUNNEL_SUBDOMAIN || 'mycarering';
-
-// 예: __dirname 사용 (Node.js에서 자동 제공)
 const PYTHON_PATH = path.resolve(__dirname, '../venv/bin/python3');
-let tunnel: any; // 타입 오류 방지
+
+let tunnel: any; // localtunnel 객체 저장용
 
 function waitForMysqlContainer() {
   console.log('⏳ Waiting for MySQL to be ready...');
@@ -45,15 +44,39 @@ function waitForMysqlContainer() {
 async function startTunnelWithRetry(retries = 5): Promise<any> {
   for (let i = 1; i <= retries; i++) {
     try {
-      tunnel = await localtunnel({ port: TUNNEL_PORT, subdomain: SUBDOMAIN });
-      console.log(`✅ Tunnel is running at: ${tunnel.url}`);
-      return tunnel;
+      const newTunnel = await localtunnel({ port: TUNNEL_PORT, subdomain: SUBDOMAIN });
+      console.log(`✅ Tunnel is running at: ${newTunnel.url}`);
+      return newTunnel;
     } catch (err) {
       console.error(`❌ Tunnel connection failed [${i}/${retries}]`, err);
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
   throw new Error('❌ Failed to establish tunnel after multiple attempts.');
+}
+
+function attachTunnelListeners() {
+  if (!tunnel) return;
+
+  tunnel.on('close', async () => {
+    console.log('⚠️ Tunnel closed. Attempting to reconnect...');
+    try {
+      tunnel = await startTunnelWithRetry();
+      attachTunnelListeners();
+    } catch (err) {
+      console.error('❌ Tunnel 재연결 실패:', err);
+    }
+  });
+
+  tunnel.on('error', async (err: any) => {
+    console.error('❌ Tunnel error:', err);
+    try {
+      tunnel = await startTunnelWithRetry();
+      attachTunnelListeners();
+    } catch (reconnectErr) {
+      console.error('❌ Tunnel error 중 재연결 실패:', reconnectErr);
+    }
+  });
 }
 
 async function startEverything() {
@@ -63,7 +86,6 @@ async function startEverything() {
 
     waitForMysqlContainer();
 
-    const PYTHON_PATH = path.resolve(__dirname, '../venv/bin/python3');
     if (!fs.existsSync(PYTHON_PATH)) {
       throw new Error(`❌ Python 실행 파일을 찾을 수 없습니다: ${PYTHON_PATH}`);
     }
@@ -79,19 +101,12 @@ async function startEverything() {
     );
 
     tunnel = await startTunnelWithRetry();
-
-    tunnel.on('close', () => {
-      console.log('❌ Tunnel closed');
-    });
-
-    tunnel.on('error', (err: any) => {
-      console.error('❌ Tunnel error:', err);
-    });
+    attachTunnelListeners();
 
     fastapi.on('close', (code: number) => {
-  console.log(`❌ FastAPI 종료됨. code: ${code}`);
-  tunnel?.close?.();
-});
+      console.log(`❌ FastAPI 종료됨. code: ${code}`);
+      tunnel?.close?.();
+    });
 
   } catch (err) {
     console.error('❌ 전체 실행 중 오류 발생:', err);

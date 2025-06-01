@@ -12,6 +12,7 @@ from app.sockets import sio
 import socketio
 from socketio import ASGIApp
 
+
 # 📦 내부 모듈 임포트
 from app.auth.utils import hash_password, verify_token
 from app.database import Base, engine, SessionLocal, get_db
@@ -22,7 +23,7 @@ from app.routes import basic_info, lifestyle, user, message, follow, favorite
 from app.routes import login # login.router를 사용할 것이므로 login 모듈 임포트
 from app.routes import post # post.router를 사용할 것이므로 post 모듈 임포트
 from app.routes import comment # comment.router를 사용할 것이므로 comment 모듈 임포트
-
+from app.websocket_routes import router as websocket_router 
 from app.routes.login import create_access_token # `create_access_token`은 login 라우터에서 가져옴
 from app.dependencies import get_current_user
 from app.schemas import CommentCreate # `app.schemas`에 CommentCreate가 있다고 가정
@@ -113,6 +114,7 @@ fastapi_app.include_router(message.router)
 fastapi_app.include_router(follow.router)
 fastapi_app.include_router(comment) # ✅ `comment.router`로 수정
 fastapi_app.include_router(favorite.router, prefix="/favorites")
+fastapi_app.include_router(websocket_router)
 
 # ✅ 만약 `app/routes/comment.py`에 이미 라우터가 있다면, 아래 중복 정의는 제거해야 합니다.
 # comment_router = APIRouter()

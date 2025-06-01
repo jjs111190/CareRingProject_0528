@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
   position: 'absolute',
-  bottom: 50,
+  bottom: 0,
   width: 44,
   height: 44,
   borderRadius: 22,

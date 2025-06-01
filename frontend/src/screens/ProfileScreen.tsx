@@ -6,6 +6,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface Post {
   id: number;
@@ -159,10 +160,15 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         <View style={styles.profileCard}>
+          <LinearGradient
+            colors={['#7F7FD5', '#86A8E7', '#91EAE4']}
+            style={{ borderRadius: 55, padding: 3 }}
+          >
           <Image
             source={imageUrl ? { uri: imageUrl } : require('../../assets/user-icon.png')}
             style={styles.profileImage}
           />
+          </LinearGradient>
           <Text style={styles.userName}>{nickname}</Text>
           <Text style={styles.joinDate}>Joined {joinText} • Student</Text>
           <View style={styles.statsContainer}>
@@ -263,7 +269,27 @@ const styles = StyleSheet.create({
   iconGroup: { flexDirection: 'row' },
   iconImage: { width: 24, height: 24, marginLeft: 15, tintColor: '#678CC8' },
   profileCard: { backgroundColor: 'white', borderRadius: 15, padding: 20, alignItems: 'center', marginBottom: 20 },
-  profileImage: { width: 100, height: 100, borderRadius: 50, marginBottom: 10 },
+  profileImageWrapper: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 10,
+},
+
+gradientRing: {
+  width: 108,        // 이미지보다 약간 크게
+  height: 108,
+  borderRadius: 54,
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 3,        // 링 두께
+},
+
+profileImage: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  backgroundColor: '#eee',
+},
   userName: { fontSize: 20, fontWeight: 'bold', marginBottom: 5 },
   joinDate: { color: '#999', marginBottom: 15 },
   statsContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%' },
