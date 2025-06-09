@@ -65,8 +65,8 @@ async def handle_join(sid, data):
 
 @sio.event
 async def typing(sid, data):
-    receiver_id = data.get('receiver_Id')
-    sender_id = data.get('sender_Id')
+    receiver_id = data.get('receiverId')
+    sender_id = data.get('senderId')
     room = f"user_{receiver_id}"
     await sio.emit("typing", sender_id, room=room)
 

@@ -18,3 +18,10 @@ export const addUser = async (name: string, email: string, age: number) => {
   const response = await api.post('/users', { name, email, age });
   return response.data;
 };
+export const getMoodStories = async () => {
+  const token = await AsyncStorage.getItem('access_token');
+  const res = await axios.get(`${API_URL}/mood/stories`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data; // [{ id, nickname, image_url, recentMood, moodCount, isFriend }, ...]
+};

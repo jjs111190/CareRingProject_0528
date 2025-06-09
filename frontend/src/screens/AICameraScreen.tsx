@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   captureButton: {
     marginTop: 30,
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     paddingHorizontal: 40,
     paddingVertical: 14,
     borderRadius: 30,

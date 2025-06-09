@@ -5,6 +5,13 @@ from jose import JWTError, jwt
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.config import settings
+# app/auth/utils.py 또는 적절한 위치에 작성
+
+from sqlalchemy.orm import Session
+from app.models.user import User
+from app.models.follow import Follow
+
+
 
 # 비밀번호 해싱 설정
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -59,3 +66,17 @@ def verify_token(token: str) -> int:
             detail="인증 정보가 만료되었거나 유효하지 않습니다",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+def get_friends(db: Session, user_id: int) -> list[User]:
+    """
+    상호 팔로우 관계인 친구 리스트 반환
+    """
+    # 내가 팔로우한 사람들
+    following = db.query(Follow.followed_id).filter(Follow.follower_id == user_id).subquery()
+
+    # 나를 팔로우한 사람들 중, 내가 팔로우한 사람만 = 친구
+    friend_users = db.query(User).join(Follow, Follow.follower_id == User.id)\
+        .filter(Follow.followed_id == user_id)\
+        .filter(User.id.in_(following)).all()
+
+    return friend_users

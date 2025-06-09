@@ -61,6 +61,7 @@ TRUNCATE TABLE lifestyle;
 TRUNCATE TABLE users;
 
 SET FOREIGN_KEY_CHECKS = 1;
+delete from moods;
 
 #서버 키는 법
 #서버 키는 법
@@ -98,3 +99,5 @@ npx webpack serve
 
 go run main.go
 
+고서버랑 여는 법 
+./run-go-tunnel.sh

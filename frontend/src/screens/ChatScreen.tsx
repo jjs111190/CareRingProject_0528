@@ -24,6 +24,7 @@ const TabScreen = ({ menus, contents }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const animatedValue = useRef(new Animated.Value(0)).current;
   const tabWidth = windowWidth / menus.length;
+  
 
   useEffect(() => {
     Animated.timing(animatedValue, {
@@ -66,7 +67,29 @@ const ChatScreen = () => {
   const [users, setUsers] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-
+const [nickname, setNickname] = useState(''); 
+useEffect(() => {
+  const loadNickname = async () => {
+    const name = await AsyncStorage.getItem('nickname');
+    console.log('🔍 nickname from storage:', name); // 확인용 로그
+    if (name) setNickname(name);
+  };
+  loadNickname();
+}, []);
+useEffect(() => {
+  const fetchNickname = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const res = await axios.get('https://mycarering.loca.lt/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNickname(res.data.nickname); // ✅ 서버에서 닉네임 가져오기
+    } catch (err) {
+      console.error('Failed to fetch nickname:', err);
+    }
+  };
+  fetchNickname();
+}, []);
   const fetchMessageUsers = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -222,13 +245,11 @@ const ChatScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={require('../../assets/back.png')} style={styles.icon} />
-        </TouchableOpacity>
-        <View style={styles.topBarCenter}>
-          <Text style={styles.topBarGreeting}>Hello..</Text>
-          <Text style={styles.topBarName}>user name</Text>
-        </View>
+        <View style={{ width: 24 }} />
+         <View style={styles.topBarCenter}>
+    <Text style={styles.topBarGreeting}>Hello..</Text>
+    <Text style={styles.topBarName}>{nickname || 'User'}</Text>
+  </View>
         <TouchableOpacity>
           <Image source={require('../../assets/search1.png')} style={styles.icon} />
         </TouchableOpacity>
@@ -288,7 +309,7 @@ const styles = StyleSheet.create({
   animatedUnderline: {
     position: 'absolute',
     height: 2,
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     bottom: 0,
     left: 0,
   },
@@ -302,7 +323,7 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   activeTabText: {
-    color: '#678CC8',
+    color: '#4387E5',
     fontWeight: 'bold',
   },
   messageItem: {
@@ -392,12 +413,12 @@ profileImage: {
   },
   fab: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 100,
     right: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     justifyContent: 'center',
     alignItems: 'center',
   },

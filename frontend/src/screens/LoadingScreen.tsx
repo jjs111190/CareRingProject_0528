@@ -36,7 +36,7 @@ const LoadingScreen = () => {
       </View>
       <ActivityIndicator 
         size="large" 
-        color="#678CC8" 
+        color="#4387E5" 
         style={styles.spinner}
       />
     </View>

@@ -17,40 +17,70 @@
                         <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="fOt-ZL-kNA">
-                                <rect key="frame" x="165" y="416" width="100" height="100"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="ZYp-vW-X5O">
+                                <rect key="frame" x="115" y="366" width="200" height="200"/>
                                 <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="splah_logo" translatesAutoresizingMaskIntoConstraints="NO" id="FMQ-vt-lK9">
-                                        <rect key="frame" x="20" y="0.0" width="60" height="100"/>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="logo" translatesAutoresizingMaskIntoConstraints="NO" id="P5C-Xk-yyF">
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="97.666666666666671"/>
                                     </imageView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="zqk-vj-QiZ">
+                                        <rect key="frame" x="0.0" y="102.66666666666669" width="200" height="97.333333333333314"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="logotext" translatesAutoresizingMaskIntoConstraints="NO" id="k91-C9-1Zy">
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="48.666666666666664"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="PBf-xc-tVz">
+                                                <rect key="frame" x="40.666666666666657" y="48.666666666666686" width="119" height="48.666666666666657"/>
+                                            </stackView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="k91-C9-1Zy" firstAttribute="centerX" secondItem="zqk-vj-QiZ" secondAttribute="centerX" id="LS7-2a-BNW"/>
+                                        </constraints>
+                                    </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerY" secondItem="fOt-ZL-kNA" secondAttribute="centerY" id="0bf-JQ-kJC"/>
-                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerX" secondItem="fOt-ZL-kNA" secondAttribute="centerX" id="57n-8f-G3f"/>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="D6l-UQ-MyI"/>
-                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerY" secondItem="fOt-ZL-kNA" secondAttribute="centerY" id="Oy8-Ws-gCz"/>
-                                    <constraint firstAttribute="width" constant="100" id="V0g-td-UrB"/>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="200" id="fda-nC-uB8"/>
-                                    <constraint firstItem="FMQ-vt-lK9" firstAttribute="centerX" secondItem="fOt-ZL-kNA" secondAttribute="centerX" id="l1b-zY-auY"/>
-                                    <constraint firstAttribute="height" constant="100" id="m3b-0l-1cA"/>
+                                    <constraint firstAttribute="width" constant="200" id="J1Y-2D-iVX"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="180" id="m49-b3-hjs"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="wbl-Nx-X0n"/>
+                                    <constraint firstAttribute="height" constant="200" id="x5A-hR-Ukb"/>
+                                </constraints>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ABA-yk-FIL">
+                                <rect key="frame" x="155.66666666666666" y="830" width="118.99999999999997" height="20.333333333333371"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Synapse Studio" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kcl-ut-UI0">
+                                        <rect key="frame" x="0.0" y="0.0" width="119" height="20.333333333333332"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="kcl-ut-UI0" firstAttribute="centerY" secondItem="ABA-yk-FIL" secondAttribute="centerY" constant="100" id="xbY-8N-T2o"/>
                                 </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="fOt-ZL-kNA" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="658-Cm-t0C"/>
-                            <constraint firstItem="fOt-ZL-kNA" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="eig-P7-WJU"/>
+                            <constraint firstItem="ZYp-vW-X5O" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="Euc-zo-MUN"/>
+                            <constraint firstItem="ZYp-vW-X5O" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="PRh-Dt-mHI"/>
+                            <constraint firstItem="ZYp-vW-X5O" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="PpS-eh-icg"/>
+                            <constraint firstItem="ABA-yk-FIL" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Znb-TB-q0W"/>
+                            <constraint firstItem="ZYp-vW-X5O" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="aNW-af-J7Z"/>
+                            <constraint firstItem="ZYp-vW-X5O" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="eaV-Ab-u1T"/>
+                            <constraint firstItem="ZYp-vW-X5O" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="kkU-9G-ahg"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="52" y="374.66266866566718"/>
+            <point key="canvasLocation" x="51.627906976744185" y="374.03433476394855"/>
         </scene>
     </scenes>
     <resources>
-        <image name="splah_logo" width="60" height="60"/>
+        <image name="logo" width="341.33334350585938" height="341.33334350585938"/>
+        <image name="logotext" width="203" height="63"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

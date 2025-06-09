@@ -2,7 +2,8 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
-from app.auth.utils import hash_password
+
+#from app.auth.utils import hash_password
 # ✅ 업데이트용 모델
 class UserUpdate(BaseModel):
     about: Optional[str] = None
@@ -51,3 +52,13 @@ class UserInfo(BaseModel):
     profile_image: Optional[str]
     is_following: bool
     is_follower: bool
+
+
+
+class UserSearchResult(BaseModel):
+    id: int
+    nickname: str  
+
+    class Config:
+        from_attributes = True 
+

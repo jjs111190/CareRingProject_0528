@@ -191,12 +191,12 @@ const styles = StyleSheet.create({
   backIcon: {
     width: 24,
     height: 24,
-    tintColor: '#678CC8',
+    tintColor: '#4387E5',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#678CC8',
+    color: '#4387E5',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   hashtagText: {
     fontSize: 14,
-    color: '#678CC8',
+    color: '#4387E5',
     fontWeight: '500',
   },
   reactionContainer: {

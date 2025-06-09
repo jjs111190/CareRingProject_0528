@@ -39,7 +39,7 @@ const IntroScreen: React.FC = () => {
 
       {/* 설명 텍스트 */}
       <Text style={{ fontSize: 18, textAlign: 'center', marginVertical: 10 }}>
-        Keep track of your <Text style={{ color: '#678CC8', fontWeight: 'bold' }}>medication</Text> times{'\n'}
+        Keep track of your <Text style={{ color: '#4387E5', fontWeight: 'bold' }}>medication</Text> times{'\n'}
         by writing them down{'\n'}on a calendar.
       </Text>
 
@@ -50,7 +50,7 @@ const IntroScreen: React.FC = () => {
         </TouchableOpacity>
 
         <View style={styles.indicatorContainer}>
-          <View style={[styles.indicator, { backgroundColor: '#678CC8' }]} />
+          <View style={[styles.indicator, { backgroundColor: '#4387E5' }]} />
           <View style={[styles.indicator, { backgroundColor: '#D1D5DB' }]} />
           <View style={[styles.indicator, { backgroundColor: '#D1D5DB' }]} />
         </View>

@@ -170,8 +170,8 @@ def get_posts(db: Session = Depends(get_db)):
     enriched_posts = []
 
     for post in posts:
-        basic_info = db.query(BasicInfo).filter(BasicInfo.user_id == post.user_id).first()
-        user_name = basic_info.name if basic_info else "Unknown"
+        user = db.query(User).filter(User.id == post.user_id).first()
+        user_name = user.nickname if user else "Unknown"
 
         enriched_posts.append({
             "id": post.id,

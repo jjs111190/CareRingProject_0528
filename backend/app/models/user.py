@@ -23,3 +23,6 @@ class User(Base):
     received_messages = relationship("Message", foreign_keys='Message.receiver_id', back_populates="receiver")
     # models.py 또는 user.py 안에서 User 모델 정의 내에 추가
     comment_likes = relationship("CommentLike", back_populates="user")
+    # models/user.py (혹은 BaseUser 클래스 등)
+    moods = relationship("Mood", back_populates="user")
+    customization = relationship("ProfileCustomization", back_populates="user", uselist=False)

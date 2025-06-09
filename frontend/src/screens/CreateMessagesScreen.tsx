@@ -32,7 +32,7 @@ const CreateMessagesScreen = () => {
       if (tab === "new") {
         res = await axios.get("https://mycarering.loca.lt/messages/available-users/mutual", config);
       } else {
-        res = await axios.get("https://mycarering.loca.lt/messages/available-users/detailed", config);
+        res = await axios.get("https://mycarering.loca.lt/messages/available-users/mutual", config);
       }
       setUsers(res.data);
     } catch (e) {
@@ -163,13 +163,13 @@ const styles = StyleSheet.create({
   },
   backButton: { padding: 4 },
   backIcon: { width: 24, height: 24, tintColor: '#000' },
-  title: { fontSize: 20, fontWeight: '700', color: '#678CC8' },
+  title: { fontSize: 20, fontWeight: '700', color: '#4387E5' },
   tabBar: {
     flexDirection: 'row', justifyContent: 'space-around',
     paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee'
   },
   tabText: { fontSize: 14, color: '#888' },
-  tabTextActive: { fontWeight: 'bold', color: '#678CC8' },
+  tabTextActive: { fontWeight: 'bold', color: '#4387E5' },
   userItem: {
     flexDirection: 'row', alignItems: 'center', padding: 16,
     borderBottomWidth: 1, borderBottomColor: '#eee'

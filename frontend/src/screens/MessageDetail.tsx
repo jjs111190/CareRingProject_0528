@@ -83,16 +83,16 @@ useEffect(() => {
     });
   };
 
-  const showSuccessToast = (message: string) => {
-    Toast.show({
-      type: 'success',
-      text1: '성공',
-      text2: message,
-      position: 'bottom',
-      bottomOffset: Platform.OS === 'ios' ? insets.bottom + (keyboardHeight > 0 ? keyboardHeight : 0) + 20 : 100,
-      visibilityTime: 2000,
-    });
-  };
+  // const showSuccessToast = (message: string) => {
+  //   Toast.show({
+  //     type: 'success',
+  //     text1: '성공',
+  //     text2: message,
+  //     position: 'bottom',
+  //     bottomOffset: Platform.OS === 'ios' ? insets.bottom + (keyboardHeight > 0 ? keyboardHeight : 0) + 20 : 100,
+  //     visibilityTime: 2000,
+  //   });
+  // };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -131,12 +131,14 @@ useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       (e) => {
+        console.log('🧪 keyboardDidShow', e.endCoordinates.height);
         setKeyboardHeight(e.endCoordinates.height);
       }
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
+        
         setKeyboardHeight(0);
       }
     );
@@ -382,7 +384,20 @@ useEffect(() => {
       { cancelable: true }
     );
   };
+const formatKoreanDateTimeInEnglish = (utcDateString: string): string => {
+  const date = new Date(utcDateString);
+  const kstTime = new Date(date.getTime() + 9 * 60 * 60 * 1000); // KST 보정
 
+  return kstTime.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',     // e.g., "Jun"
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,       // "AM/PM" 형식
+    timeZone: 'Asia/Seoul', // 명확하게 서울로 고정
+  });
+};
   const sortedComments = [...comments]
     .map(comment => ({
       ...comment,
@@ -404,7 +419,7 @@ useEffect(() => {
      <KeyboardAvoidingView
     style={{ flex: 1 }}
     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 64 : 0} // 중요!
+    keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 250 : 0} // 중요!
   >
     {/* 댓글 헤더 */}
         <View style={styles.header}>
@@ -489,7 +504,7 @@ useEffect(() => {
                     <Text
                       style={{
                         fontWeight: 'bold',
-                        color: comment.user_id === currentUserId ? '#678CC8' : '#000',
+                        color: comment.user_id === currentUserId ? '#4387E5' : '#000',
                       }}
                     >
                       {comment.user_name}
@@ -625,7 +640,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTabButton: {
-    borderBottomColor: '#678CC8',
+    borderBottomColor: '#4387E5',
   },
   tabButtonText: {
     fontSize: 15,
@@ -633,7 +648,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   activeTabButtonText: {
-    color: '#678CC8',
+    color: '#4387E5',
     fontWeight: 'bold',
   },
   // commentsContainer was the scrollable part, now content is directly in KeyboardAwareScrollView
@@ -729,7 +744,7 @@ commentUserIcon: {
   },
   commentSubmitButton: {
     marginLeft: 10,
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
@@ -754,7 +769,7 @@ commentUserIcon: {
     fontSize: 15,
   },
   sendButton: {
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     borderRadius: 25,
     width: 40,
     height: 40,

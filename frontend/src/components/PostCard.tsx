@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import MessageDetail from '../screens/MessageDetail';
 import LinearGradient from 'react-native-linear-gradient';
+import { Easing } from 'react-native';
 
 interface PostCardProps {
   id: number;
@@ -41,7 +42,6 @@ const PostCard: React.FC<PostCardProps> = ({
   user,
   user_id,
   created_at,
-  user_profile_image,
   hashtags,
   onDelete
 }) => {
@@ -69,6 +69,46 @@ const PostCard: React.FC<PostCardProps> = ({
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [receiver, setReceiver] = useState<{ id: number; nickname: string; image_url?: string } | null>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [postCreatedAt, setPostCreatedAt] = useState<string | null>(null);
+  const slideAnim = useRef(new Animated.Value(300)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+useEffect(() => {
+  if (showCommentsModal) {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  } else {
+    slideAnim.setValue(300);
+    opacityAnim.setValue(0);
+  }
+}, [showCommentsModal]);
+const handleCloseModal = () => {
+  Animated.parallel([
+    Animated.timing(slideAnim, {
+      toValue: 300,
+      duration: 400,
+      easing: Easing.in(Easing.exp),
+      useNativeDriver: true,
+    }),
+    Animated.timing(opacityAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }),
+  ]).start(() => {
+    setShowCommentsModal(false); // 애니메이션 끝나고 숨김
+  });
+};
   useEffect(() => {
   const fetchReceiverInfo = async () => {
     try {
@@ -99,7 +139,7 @@ const PostCard: React.FC<PostCardProps> = ({
     Animated.spring(scaleAnim, {
       toValue: 1,
       friction: 3,
-      tension: 40,
+      tension: 20,
       useNativeDriver: true,
     }).start();
   };
@@ -123,19 +163,24 @@ const PostCard: React.FC<PostCardProps> = ({
   }, [id]);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await axios.get(`https://mycarering.loca.lt/posts/${id}`);
-        const latestComments = res.data.comments || [];
+  const interval = setInterval(async () => {
+    try {
+      const res = await axios.get(`https://mycarering.loca.lt/posts/${id}`);
+      const latestComments = res.data.comments || [];
+      const newLastId = latestComments.at(-1)?.id;
+      const oldLastId = comments.at(-1)?.id;
+
+      if (latestComments.length !== comments.length || newLastId !== oldLastId) {
         setComments(latestComments);
         setLikeCount(res.data.likes || 0);
-      } catch (err) {
-        console.error('🔁 Comment polling failed', err);
       }
-    }, 3000);
+    } catch (err) {
+      console.error('🔁 Comment polling failed', err);
+    }
+  }, 10000); // 🔁 10초로 늘림
 
-    return () => clearInterval(interval);
-  }, [id]);
+  return () => clearInterval(interval);
+}, [id, comments]);
 
   useEffect(() => {
     const ws = new WebSocket(`wss://mycarering.loca.lt/ws/comments/${id}`);
@@ -209,7 +254,9 @@ const PostCard: React.FC<PostCardProps> = ({
       const res = await axios.get(`https://mycarering.loca.lt/posts/${id}`);
       setLikeCount(res.data.likes || 0);
       setComments(res.data.comments || []);
-
+        if (res.data.created_at) {
+      setPostCreatedAt(res.data.created_at); // ✅ 작성 시간 저장
+    }
       const likesMap: Record<number, { count: number; liked: boolean }> = {};
       for (const c of res.data.comments) {
         likesMap[c.id] = { count: c.likes || 0, liked: c.likedByMe || false };
@@ -263,7 +310,7 @@ const PostCard: React.FC<PostCardProps> = ({
       setLiked(prev => !prev);
       setLikeCount(prev => newLiked ? prev - 1 : prev + 1);
     } finally {
-      setTimeout(() => setIsLiking(false), 1000);
+      setTimeout(() => setIsLiking(false), 50000);
     }
   };
 
@@ -314,7 +361,23 @@ const PostCard: React.FC<PostCardProps> = ({
       setIsDeleting(false);
     }
   };
+const formatKoreanDateTime = (utcDateString: string): string => {
+  const date = new Date(utcDateString);
 
+  // 한국 시간으로 변환 (UTC + 9)
+  const koreanTime = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
+  // 한국식 날짜 포맷 (예: 2025.06.01 오전 11:22)
+  return date.toLocaleString('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'short',     // 예: "Jun"
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,       // AM/PM 표기
+  });
+};
   return (
     <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
       <View style={styles.card}>
@@ -367,7 +430,7 @@ const PostCard: React.FC<PostCardProps> = ({
               style={styles.postImage}
             />
           )}
-          {created_at && <Text style={styles.createdAt}>{new Date(created_at).toLocaleString()}</Text>}
+          
         </TouchableOpacity>
 
         {/* Hashtags Section */}
@@ -380,6 +443,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 </Text>
               ))}
             </View>
+            
             {processedHashtags.length > 5 && (
               <TouchableOpacity onPress={() => setShowAllHashtags(prev => !prev)}>
                 <Text style={styles.seeMoreHashtagText}>
@@ -389,7 +453,11 @@ const PostCard: React.FC<PostCardProps> = ({
             )}
           </View>
         )}
-
+{postCreatedAt && (
+  <Text style={styles.createdAt}>
+    {formatKoreanDateTime(postCreatedAt)}
+  </Text>
+)}
         {/* Reaction Bar */}
         <View style={styles.reactionBar}>
           <TouchableOpacity
@@ -446,9 +514,13 @@ const PostCard: React.FC<PostCardProps> = ({
                       {comment.user_name}
                     </Text>
                     {' '}
+                    
                     {comment.content}
+                    
                   </Text>
-              
+              <Text style={styles.createdAt}>
+  {formatKoreanDateTime(comment.created_at)}
+</Text>
                 </View>
 
                 <TouchableOpacity
@@ -469,7 +541,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 </TouchableOpacity>
               </TouchableOpacity>
             ))}
-            {comments.length > 3 && (
+            {comments.length > 2 && (
               <TouchableOpacity onPress={() => setShowAllComments((prev) => !prev)}>
                 <Text style={styles.seeMoreCommentsText}>
                   {showAllComments ? 'Hide comments' : `See comments`}
@@ -480,24 +552,30 @@ const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {/* Comments Modal */}
-        {showCommentsModal && (
-          <Modal
-            animationType="slide"
-            transparent
-            visible={showCommentsModal}
-            onRequestClose={() => setShowCommentsModal(false)}
-          >
-            <TouchableWithoutFeedback onPress={() => setShowCommentsModal(false)}>
-              <View style={styles.overlay} />
-            </TouchableWithoutFeedback>
-            <View style={styles.bottomSheet}>
-              <MessageDetail
-                postId={id}
-                showCommentsOnly={true}
-              />
-            </View>
-          </Modal>
-        )}
+    {showCommentsModal && (
+  <Modal
+    animationType="none"
+    transparent
+    visible={showCommentsModal}
+    onRequestClose={handleCloseModal}
+  >
+    <TouchableWithoutFeedback onPress={handleCloseModal}>
+      <View style={styles.overlay} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[
+        styles.bottomSheet,
+        {
+          transform: [{ translateY: slideAnim }],
+          opacity: opacityAnim,
+        },
+      ]}
+    >
+      <MessageDetail postId={id} showCommentsOnly={true} />
+    </Animated.View>
+  </Modal>
+)}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -606,7 +684,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   hashtagText: {
-    color: '#678CC8',
+    color: '#4387E5',
     fontSize: 13,
     marginRight: 8,
     marginBottom: 4,
@@ -677,7 +755,7 @@ const styles = StyleSheet.create({
     color: '#212121',
   },
   myCommentUserName: {
-    color: '#678CC8',
+    color: '#4387E5',
   },
   commentTimestamp: {
     fontSize: 10,
@@ -699,7 +777,7 @@ const styles = StyleSheet.create({
     color: '#757575',
   },
   seeMoreCommentsText: {
-    color: '#678CC8',
+    color: '#4387E5',
     fontSize: 12,
     marginTop: 8,
     marginBottom: 5,
@@ -720,6 +798,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
   },
+  postTimestamp: {
+  fontSize: 11,
+  color: '#BDBDBD',
+  paddingHorizontal: 16,
+  paddingBottom: 10,
+},
 });
 
 export default PostCard;

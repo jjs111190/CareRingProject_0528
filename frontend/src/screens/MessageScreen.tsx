@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
   },
-  icon: { width: 35, height: 35, tintColor: '#678CC8' },
+  icon: { width: 35, height: 35, tintColor: '#4387E5' },
   userInfo: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
   username: { color: '#000000', fontWeight: '700', fontSize: 20 },
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     //borderTopRightRadius: 4, // 더 자연스러운 곡선을 위해
   },
   receivedBubble: {
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     //borderTopLeftRadius: 4, // 더 자연스러운 곡선을 위해
   },
   bubbleText: { fontSize: 16, lineHeight: 22 },
@@ -641,7 +641,7 @@ leftTail: {
   borderBottomWidth: 6,
   borderBottomColor: 'transparent',
   borderRightWidth: 10,
-  borderRightColor: '#678CC8', // 왼쪽 말풍선 배경색
+  borderRightColor: '#4387E5', // 왼쪽 말풍선 배경색
 },
 
 rightTail: {

@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   shareButton: {
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     paddingVertical: 18,
     borderRadius: 30,
     marginTop: 30,

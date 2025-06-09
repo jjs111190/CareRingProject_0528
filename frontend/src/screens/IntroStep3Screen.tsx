@@ -61,7 +61,7 @@ const IntroStep3Screen: React.FC = () => {
 
         <View style={[styles.indicator, { backgroundColor: '#D1D5DB' }]} />
         <View style={[styles.indicator, { backgroundColor: '#D1D5DB' }]} />
-        <View style={[styles.indicator, { backgroundColor: '#678CC8' }]} />
+        <View style={[styles.indicator, { backgroundColor: '#4387E5' }]} />
 
         <TouchableOpacity onPress={handleNext}>
           <Image source={require('../../assets/right.png')} style={styles.imageButton} />
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
-    color: '#678CC8',
+    color: '#4387E5',
   },
   description: {
     fontSize: 18,
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   highlight: {
-    color: '#678CC8',
+    color: '#4387E5',
     fontWeight: 'bold',
   },
   navigationContainer: {

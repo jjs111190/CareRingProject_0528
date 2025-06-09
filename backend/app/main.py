@@ -11,8 +11,9 @@ import json # ✅ JSON 처리 임포트
 from app.sockets import sio
 import socketio
 from socketio import ASGIApp
-
-
+from app.routes import mood
+from app.routes import widget_layout
+from app.routes import upload 
 # 📦 내부 모듈 임포트
 from app.auth.utils import hash_password, verify_token
 from app.database import Base, engine, SessionLocal, get_db
@@ -28,7 +29,9 @@ from app.routes.login import create_access_token # `create_access_token`은 logi
 from app.dependencies import get_current_user
 from app.schemas import CommentCreate # `app.schemas`에 CommentCreate가 있다고 가정
 from app.websocket_client import send_message_to_go_server
-
+from app.routes import search
+from app.routes import medicines
+from app.routes import customization
 # ------------------------------
 # ✅ Socket.IO 서버 생성
 # ------------------------------
@@ -115,7 +118,12 @@ fastapi_app.include_router(follow.router)
 fastapi_app.include_router(comment) # ✅ `comment.router`로 수정
 fastapi_app.include_router(favorite.router, prefix="/favorites")
 fastapi_app.include_router(websocket_router)
-
+fastapi_app.include_router(mood.router)
+fastapi_app.include_router(search.router) 
+fastapi_app.include_router(medicines.router)
+fastapi_app.include_router(customization.router)
+fastapi_app.include_router(widget_layout.router)
+fastapi_app.include_router(upload.router)
 # ✅ 만약 `app/routes/comment.py`에 이미 라우터가 있다면, 아래 중복 정의는 제거해야 합니다.
 # comment_router = APIRouter()
 # @comment_router.post("/posts/{post_id}/comments")
@@ -174,13 +182,5 @@ async def redis_subscriber():
 app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app)
 
 # ✅ FastAPI 시작 시 이벤트 핸들러: Redis 리스너 시작
-@fastapi_app.on_event("startup")
-async def startup_event():
-    """
-    FastAPI 시작 시 Redis 구독자를 백그라운드 태스크로 실행합니다.
-    """
-    asyncio.create_task(redis_subscriber())
-    print("🚀 Redis 백그라운드 리스너가 FastAPI 시작 태스크로 실행되었습니다.")
-
 
 socket_app = ASGIApp(sio, other_asgi_app=app)

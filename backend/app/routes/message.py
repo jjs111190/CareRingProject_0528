@@ -15,32 +15,25 @@ from app.utils.redis import publish_to_redis
 router = APIRouter(prefix="/messages", tags=["Messages"])
 
 # ✅ 메시지 전송 가능한 사용자 목록 (내가 팔로우한 사용자만)
-@router.get("/available-users/mutual", response_model=List[UserInfo])
-def get_mutual_follow_users(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Returns a list of users with whom the current user has a mutual follow relationship,
-    making them available for direct messaging.
-    """
+@router.get("/available-users/mutual")
+def get_mutual_follow_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     all_users = db.query(User).filter(User.id != current_user.id).all()
-    mutual_users = []
 
+    mutuals = []
     for user in all_users:
-        is_following = db.query(Follow).filter_by(follower_id=current_user.id, followed_id=user.id).first() is not None
-        is_follower = db.query(Follow).filter_by(follower_id=user.id, followed_id=current_user.id).first() is not None
+        is_following = db.query(Follow).filter_by(follower_id=current_user.id, following_id=user.id).first() is not None
+        is_follower = db.query(Follow).filter_by(follower_id=user.id, following_id=current_user.id).first() is not None
 
         if is_following and is_follower:
-            mutual_users.append(UserInfo(
-                id=user.id,
-                nickname=user.nickname,
-                profile_image=user.profile_image,
-                is_following=True, # Always True for mutual follows
-                is_follower=True   # Always True for mutual follows
-            ))
+            mutuals.append({
+                "id": user.id,
+                "nickname": user.nickname,
+                "profile_image": user.profile_image,
+                "is_following": True,
+                "is_follower": True
+            })
 
-    return mutual_users
+    return mutuals
 
 # ✅ 대화중인 사용자 목록
 @router.get("/users", response_model=List[MessageUser])
@@ -256,7 +249,7 @@ def mark_single_message_as_read(
     return {"status": "success", "message_id": message_id}
 
 # 메시지 삭제 API 라우트
-@router.delete("/messages/{message_id}")
+@router.delete("/{message_id}")
 async def delete_message(message_id: int, current_user: User = Depends(get_current_user)):
     message = db.query(Message).filter(Message.id == message_id).first()
     if not message or message.sender_id != current_user.id:

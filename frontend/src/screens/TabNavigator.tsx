@@ -12,13 +12,14 @@ import {
   Pressable,
   Animated,
   Easing,
+  
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
 import CalendarScreen from './CalendarScreen';
-import SearchScreen from './SearchScreen';
+import ChatScreen from './ChatScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -56,7 +57,12 @@ const CustomTabButton = ({ onPress }) => {
   );
 };
 
-const AnimatedTabIcon = ({ focused, source, label }) => {
+const AnimatedTabIcon = ({
+  focused,
+  source,
+  label,
+  iconStyle, // ✅ iconStyle props 추가
+}) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const colorAnim = useRef(new Animated.Value(0)).current;
 
@@ -78,16 +84,26 @@ const AnimatedTabIcon = ({ focused, source, label }) => {
 
   const textColor = colorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#888', '#678CC8'],
+    outputRange: ['#888', '#4387E5'],
   });
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
-      <Image 
-        source={source} 
-        style={[styles.iconImage, { tintColor: focused ? '#678CC8' : '#888' }]} 
-      />
-      <Animated.Text style={[styles.iconText, { color: textColor }]}>{label}</Animated.Text>
+      <View style={[styles.iconWrapper, focused && styles.focusedIconWrapper]}>
+        <Image
+          source={source}
+          style={[
+            styles.iconImage, // 기존 공통 스타일
+            { tintColor: focused ? '#4387E5' : '#888' }, // 포커스 여부에 따라 색상 변화
+            iconStyle, // ✅ 전달된 아이콘 스타일 적용
+          ]}
+        />
+      </View>
+      {label && (
+        <Animated.Text style={[styles.iconText, { color: textColor }]}>
+          {label}
+        </Animated.Text>
+      )}
     </Animated.View>
   );
 };
@@ -157,37 +173,43 @@ const TabNavigator = () => {
           options={{
             headerShown: false,
             tabBarIcon: ({ focused }) => (
-              <AnimatedTabIcon focused={focused} source={require('../../assets/home.png')} label="Home" />
+              <AnimatedTabIcon focused={focused} source={require('../../assets/home.png')}  />
             ),
           }}
         />
         <Tab.Screen
-          name="Search"
-          component={SearchScreen}
-          options={{
-            headerShown: false,
-            tabBarIcon: ({ focused }) => (
-              <AnimatedTabIcon focused={focused} source={require('../../assets/search.png')} label="Search" />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Add"
-          component={() => null} // 또는 View
-          options={{
-              tabBarButton: () => <CustomTabButton onPress={() => {
-          console.log('플러스 버튼 클릭됨');
-            setModalVisible(true);
-            }} />,
-          }}
-        />
+  name="Chat"
+  component={ChatScreen}
+  options={{
+    headerShown: false,
+    tabBarIcon: ({ focused }) => (
+      <AnimatedTabIcon
+        focused={focused}
+        source={require('../../assets/chatbubble.png')}
+       
+        iconStyle={{ width: 40, height: 40 }} // ✅ 크기 축소 적용
+      />
+    ),
+  }}
+/>
+   <Tab.Screen
+  name="Add"
+  component={() => null}
+  options={{
+    tabBarButton: () => (
+      <View style={styles.addButtonWrapper}>
+        <CustomTabButton onPress={() => setModalVisible(true)} />
+      </View>
+    ),
+  }}
+/>
         <Tab.Screen
           name="Calendar"
           component={CalendarScreen}
           options={{
             headerShown: false,
             tabBarIcon: ({ focused }) => (
-              <AnimatedTabIcon focused={focused} source={require('../../assets/Calendar1.png')} label="Calendar" />
+              <AnimatedTabIcon focused={focused} source={require('../../assets/Calendar1.png')}  />
             ),
           }}
         />
@@ -197,7 +219,7 @@ const TabNavigator = () => {
           options={{
             headerShown: false,
             tabBarIcon: ({ focused }) => (
-              <AnimatedTabIcon focused={focused} source={require('../../assets/profile.png')} label="Profile" />
+              <AnimatedTabIcon focused={focused} source={require('../../assets/profile.png')}  />
             ),
           }}
         />
@@ -260,16 +282,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     height: 75,
     borderTopWidth: 0,
-    shadowColor: '#678CC8',
+    shadowColor: '#4387E5',
     shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 8,
   },
   iconImage: {
-    marginTop: 10,
-    width: 40,
-    height: 40,
+    marginTop: 20,
+    width: 50,
+    height: 50,
     marginBottom: 0,
     resizeMode: 'contain',
   },
@@ -277,28 +299,31 @@ const styles = StyleSheet.create({
     fontSize: 7,
     fontWeight: '500',
   },
-  customButtonContainer: {
-    position: 'absolute',
-    top: -25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#678CC8',
-    shadowColor: '#678CC8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
-    left: '50%',
-    marginLeft: -30,
-  },
-  addIconImage: {
-    width: 40,
-    height: 40,
-    tintColor: 'white',
-  },
+ customButtonContainer: {
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: 40,
+  height: 40,
+  borderRadius: 10,
+  backgroundColor: 'white',
+  borderWidth: 2,
+  borderColor: '#4387E5',
+  marginTop: 6,
+
+},
+// ✅ styles에 추가
+addButtonWrapper: {
+  position: 'absolute',
+  
+  left: '50%',
+  transform: [{ translateX: -20 }], // 버튼 width/2 만큼 왼쪽으로 보정
+  zIndex: 10,
+},
+addIconImage: {
+  width: 35,
+  height: 35,
+  tintColor: '#4387E5',
+},
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

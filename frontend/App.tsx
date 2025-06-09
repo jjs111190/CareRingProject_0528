@@ -1,3 +1,7 @@
+// ✅ App.tsx 또는 index.js의 최상단
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
+// 나머지 import...
 import { LogBox, View, Text, Platform } from 'react-native';
 LogBox.ignoreAllLogs();
 
@@ -7,6 +11,8 @@ import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from './toastConfig'; // 커스텀 설정 (선택사항)
+import PushNotification from 'react-native-push-notification';
+import OneSignal, { OpenedEvent, InAppMessage, NotificationReceivedEvent, OSNotification } from 'react-native-onesignal';
 
 // 📌 화면 import
 import CreateMessagesScreen from './src/screens/CreateMessagesScreen';
@@ -29,8 +35,19 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import UserProfileScreen from './src/screens/UserProfileScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import MessageDetail from './src/screens/MessageDetail';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import CreateMoodScreen from './src/screens/CreateMoodScreen';
+import IdSearchInput from './src/components/IdSearchInput';
+import MoodDetailScreen from './src/screens/MoodDetailScreen';
+import ProfileCustomizer from './src/screens/ProfileCustomizer';
 
+
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+PushNotification.configure({
+  onNotification: function (notification) {
+    console.log('LOCAL NOTIFICATION ==>', notification);
+  },
+  requestPermissions: Platform.OS === 'ios',
+});
 // GoogleSignin.configure({
 //   webClientId: 'GOOGLE_WEB_CLIENT_ID.apps.googleusercontent.com',
 // });
@@ -80,6 +97,14 @@ const App = () => {
           <Stack.Screen name="UserProfile" component={UserProfileScreen} />
           <Stack.Screen name="ChatScreen" component={ChatScreen} />
           <Stack.Screen name="CreateMessagesScreen" component={CreateMessagesScreen} />
+          <Stack.Screen name="CreateMood" component={CreateMoodScreen} options={{ title: '컨디션 등록' }} />
+          <Stack.Screen
+                name="IdSearchInput"
+                component={IdSearchInput}
+                options={{ headerShown: false }} // 또는 필요에 따라 true
+              />
+       <Stack.Screen name="MoodDetail" component={MoodDetailScreen} />
+        <Stack.Screen name="ProfileCustomizer" component={ProfileCustomizer}/>
         </Stack.Navigator>
       </NavigationContainer>
       <Toast config={toastConfig} />

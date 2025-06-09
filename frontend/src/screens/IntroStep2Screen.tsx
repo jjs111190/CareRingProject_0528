@@ -51,7 +51,7 @@ const IntroStep2Screen: React.FC = () => {
         </TouchableOpacity>
 
         <View style={[styles.indicator, { backgroundColor: '#D1D5DB' }]} />
-        <View style={[styles.indicator, { backgroundColor: '#678CC8' }]} />
+        <View style={[styles.indicator, { backgroundColor: '#4387E5' }]} />
         <View style={[styles.indicator, { backgroundColor: '#D1D5DB' }]} />
 
         <TouchableOpacity onPress={handleNext}>
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
-    color: '#678CC8',
+    color: '#4387E5',
   },
   descriptionText: {
     fontSize: 18,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   highlight: {
-    color: '#678CC8',
+    color: '#4387E5',
     fontWeight: 'bold',
   },
   navigationContainer: {

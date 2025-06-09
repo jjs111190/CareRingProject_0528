@@ -73,11 +73,11 @@ export const globalStyles = StyleSheet.create({
   // 버튼 스타일
   button: {
     width: '90%',
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
     borderRadius: 12,
     paddingVertical: scale(16),
     marginBottom: scale(24),
-    shadowColor: '#678CC8',
+    shadowColor: '#4387E5',
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
@@ -168,7 +168,7 @@ export const globalStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#678CC8',
+    backgroundColor: '#4387E5',
   },
   loadingLogoRow: {
     flexDirection: 'row',
@@ -234,8 +234,8 @@ genderButton: {
   justifyContent: 'center',
 },
 genderButtonSelected: {
-  backgroundColor: '#678CC8',
-  borderColor: '#678CC8',
+  backgroundColor: '#4387E5',
+  borderColor: '#4387E5',
 },
 genderText: {
   color: '#374151',
